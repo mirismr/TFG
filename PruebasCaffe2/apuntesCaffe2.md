@@ -43,6 +43,7 @@ fila i -> probababilidades para cada clase (0,9) del segundo dato : dato[0][i]
 
 Formato de datos NCHW or channels_first, NHWC or channels_last.
 In this example, we’re using NCHW storage order on the mnist_train dataset.
+This is called NCHW for Number, Channels, Height and Width.
 
 ## Capa RELU
 One way ReLUs improve neural networks is by speeding up training. The gradient computation is very simple (either 0 or 1 depending on the sign of xx). Also, the computational step of a ReLU is easy: any negative elements are set to 0.0 -- no exponentials, no multiplication or division operations.

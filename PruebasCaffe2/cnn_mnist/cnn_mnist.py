@@ -3,7 +3,7 @@ import numpy as np
 import os
 import shutil
 import caffe2.python.predictor.predictor_exporter as pe
-
+import caffe2.python.tutorials.helpers as helpers
 
 from caffe2.python import core, model_helper, net_drawer, workspace, visualize, brew
 
@@ -27,6 +27,7 @@ current_folder = os.path.expanduser('.')
 data_folder = os.path.join(current_folder, 'tutorial_data', 'mnist')
 root_folder = os.path.join(current_folder, 'tutorial_files', 'tutorial_mnist')
 db_missing = False
+
 
 if not os.path.exists(data_folder):
 	os.makedirs(data_folder)   
@@ -69,12 +70,14 @@ def AddInput(model, batch_size, db, db_type):
 	data_uint8, label = model.TensorProtosDBInput(
 		[], ["data_uint8", "label"], batch_size=batch_size,
 		db=db, db_type=db_type)
+
 	# cast the data to float
 	data = model.Cast(data_uint8, "data", to=core.DataType.FLOAT)
 	# scale data from [0,255] down to [0,1]
 	data = model.Scale(data, data, scale=float(1./256))
 	# don't need the gradient for the backward pass
 	data = model.StopGradient(data, data)
+
 	return data, label
 
 #calcula lo gordo, return softmax
@@ -105,7 +108,7 @@ def AddLeNetModel(model, data):
 	fc3 = brew.fc(model, pool2, 'fc3', dim_in=100 * 4 * 4, dim_out=500)
 
 	
-	#TODO: RELU despues de cada conv layer
+	#TODO: RELU despues de cada conv layer -> no mejora mucho la accuracy
 	relu = brew.relu(model, fc3, fc3)
 	pred = brew.fc(model, relu, 'pred', 500, 10)
 	softmax = brew.softmax(model, pred, 'softmax')
@@ -243,10 +246,13 @@ print("Protocol buffers files have been created in your root folder: " + root_fo
 
 
 #TRAINING
+
+
 # The parameter initialization network only needs to be run once.
 workspace.RunNetOnce(train_model.param_init_net)
 # creating the network
 workspace.CreateNet(train_model.net, overwrite=True)
+
 # set the number of iterations and track the accuracy & loss
 total_iters = 200
 accuracy = np.zeros(total_iters)
@@ -256,6 +262,7 @@ for i in range(total_iters):
     workspace.RunNet(train_model.net)
     accuracy[i] = workspace.FetchBlob('accuracy')
     loss[i] = workspace.FetchBlob('loss')
+
 # After the execution is done, let's plot the values.
 pyplot.plot(loss, 'b')
 pyplot.plot(accuracy, 'r')
@@ -264,7 +271,6 @@ pyplot.legend(('Loss', 'Accuracy'), loc='upper right')
 
 #ejecutar en la red de test para ver la precision
 # run a test pass on the test net
-'''
 workspace.RunNetOnce(test_model.param_init_net)
 workspace.CreateNet(test_model.net, overwrite=True)
 test_accuracy = np.zeros(100)
@@ -275,18 +281,29 @@ for i in range(100):
 pyplot.plot(test_accuracy, 'r')
 pyplot.title('Acuracy over test batches.')
 print('test_accuracy: %f' % test_accuracy.mean())
-'''
+
+
 
 #EJEMPLOS
+'''
 # Let's look at some of the data.
 pyplot.figure()
 data = workspace.FetchBlob('data')
 _ = visualize.NCHW.ShowMultiple(data)
 pyplot.figure()
 softmax = workspace.FetchBlob('softmax')
-_ = pyplot.plot(softmax[7], 'ro')
+_ = pyplot.plot(softmax[0], 'ro')
 pyplot.title('Prediction for the first image')
+pyplot.figure()
+softmax = workspace.FetchBlob('softmax')
+_ = pyplot.plot(softmax[1], 'ro')
+pyplot.title('Prediction for the second image')
+pyplot.figure()
+softmax = workspace.FetchBlob('softmax')
+_ = pyplot.plot(softmax[2], 'ro')
+pyplot.title('Prediction for the third image')
 pyplot.show()
+'''
 
 #GUARDAR MODELO EN UN FICHERO
 '''
@@ -313,25 +330,27 @@ _ = visualize.NCHW.ShowMultiple(blob)
 
 # reset the workspace, to make sure the model is actually loaded
 workspace.ResetWorkspace(root_folder)
-
 # verify that all blobs are destroyed.
 print("The blobs in the workspace after reset: {}".format(workspace.Blobs()))
-
 # load the predict net
 predict_net = pe.prepare_prediction_net(os.path.join(root_folder, "mnist_model.minidb"), "minidb")
-
 # verify that blobs are loaded back
 print("The blobs in the workspace after loading the model: {}".format(workspace.Blobs()))
-
 # feed the previously saved data to the loaded model
 workspace.FeedBlob("data", blob)
 
 # predict
 workspace.RunNetOnce(predict_net)
-softmax = workspace.FetchBlob("softmax")
 
 # the first letter should be predicted correctly
 pyplot.figure()
 _ = pyplot.plot(softmax[0], 'ro')
 pyplot.title('Prediction for the first image')
+pyplot.figure()
+_ = pyplot.plot(softmax[1], 'ro')
+pyplot.title('Prediction for the second image')
+pyplot.figure()
+_ = pyplot.plot(softmax[2], 'ro')
+pyplot.title('Prediction for the third image')
+pyplot.show()
 '''
