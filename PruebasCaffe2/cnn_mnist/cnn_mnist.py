@@ -285,7 +285,7 @@ print('test_accuracy: %f' % test_accuracy.mean())
 
 
 #EJEMPLOS
-'''
+
 # Let's look at some of the data.
 pyplot.figure()
 data = workspace.FetchBlob('data')
@@ -303,7 +303,7 @@ softmax = workspace.FetchBlob('softmax')
 _ = pyplot.plot(softmax[2], 'ro')
 pyplot.title('Prediction for the third image')
 pyplot.show()
-'''
+
 
 #GUARDAR MODELO EN UN FICHERO
 '''
