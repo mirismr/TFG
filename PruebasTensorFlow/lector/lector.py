@@ -16,25 +16,26 @@ IMAGE_WIDTH=56
 
 #funcion a aplicar con map
 def _parse_function(filename, label):
-	image_string = tf.read_file(filename)
-	image_decoded = tf.image.decode_jpeg(image_string)
-	#¿resized o cropped?
-	image_resized = tf.image.resize_images(image_decoded, [IMAGE_HEIGHT, IMAGE_WIDTH], method=tf.image.ResizeMethod.NEAREST_NEIGHBOR)
-	return image_resized, label
+    image_string = tf.read_file(filename)
+    image_decoded = tf.image.decode_jpeg(image_string)
+    #¿resized o cropped?
+    image_resized = tf.image.resize_images(image_decoded, [IMAGE_HEIGHT, IMAGE_WIDTH], method=tf.image.ResizeMethod.NEAREST_NEIGHBOR)
+    return image_resized, label
 
 #devuelve un dataset con las imagenes y los labels
 def read_images(filenames, labels):
-	dataset = tf.data.Dataset.from_tensor_slices((filenames, labels))
-	dataset = dataset.map(_parse_function)
+    dataset = tf.data.Dataset.from_tensor_slices((filenames, labels))
+    dataset = dataset.map(_parse_function)
 
-	return dataset
+    return dataset
 
+#devuelve lista con los nombres de la imagen con formato:directory/imagen.JPEG
 def get_images_name(directory):
-	name_list = os.listdir(directory)
-	#depende del directorio desde donde se lance el programa habra que cambiar la formacion de la ruta
-	name_list = [directory + '/' + name for name in name_list]
+    name_list = os.listdir(directory)
+    #depende del directorio desde donde se lance el programa habra que cambiar la formacion de la ruta
+    name_list = [directory + '/' + name for name in name_list]
 
-	return name_list
+    return name_list
 
 def show_images(images, cols = 1, titles = None):
     """Display a list of images in a single figure with matplotlib.
@@ -62,8 +63,10 @@ def show_images(images, cols = 1, titles = None):
     fig.set_size_inches(np.array(fig.get_size_inches()) * n_images)
     plt.show()
 
-filenames = tf.constant(get_images_name('images'))
 
+#########################################################################
+
+filenames = tf.constant(get_images_name('images'))
 # `labels[i]` is the label for the image in `filenames[i].
 labels = tf.constant([0, 0])
 
@@ -75,11 +78,11 @@ list_labels = []
 iterator = dataset.make_one_shot_iterator()
 next_element = iterator.get_next()
 while True:
-	try:
-		image, label = sess.run(next_element)
-		list_images.append(image)
-		list_labels.append(label)
-	except tf.errors.OutOfRangeError:
-		break
+    try:
+        image, label = sess.run(next_element)
+        list_images.append(image)
+        list_labels.append(label)
+    except tf.errors.OutOfRangeError:
+        break
 
 show_images(list_images, titles=list_labels)
