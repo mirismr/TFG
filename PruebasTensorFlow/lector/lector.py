@@ -63,9 +63,28 @@ def show_images(images, cols = 1, titles = None):
     fig.set_size_inches(np.array(fig.get_size_inches()) * n_images)
     plt.show()
 
+#obtiene las etiquetas asociadas a un synset dado su wnid
+def get_words(wnid):
+    link = "http://www.image-net.org/api/text/wordnet.synset.getwords?wnid="+wnid
+    import urllib.request
+    data = urllib.request.urlopen(link)
+
+    words = ''
+    for line in data:
+        line = line.decode("utf-8") 
+        words=words+line
+
+    words = words.split('\n')
+    words.pop()
+    return words
 
 #########################################################################
 
+print(get_words("n02391617"))
+print(get_words("n02078574"))
+print(get_words("n02073831"))
+
+'''
 filenames = tf.constant(get_images_name('images'))
 # `labels[i]` is the label for the image in `filenames[i].
 labels = tf.constant([0, 0])
@@ -86,3 +105,4 @@ while True:
         break
 
 show_images(list_images, titles=list_labels)
+'''
