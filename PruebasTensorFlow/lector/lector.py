@@ -20,6 +20,7 @@ def _parse_function(filename, label):
     image_decoded = tf.image.decode_jpeg(image_string)
     #¿resized o cropped?
     image_resized = tf.image.resize_images(image_decoded, [IMAGE_HEIGHT, IMAGE_WIDTH], method=tf.image.ResizeMethod.NEAREST_NEIGHBOR)
+    
     return image_resized, label
 
 #devuelve un dataset con las imagenes y los labels
@@ -71,23 +72,26 @@ def get_words(wnid):
 
     words = ''
     for line in data:
-        line = line.decode("utf-8") 
+        line = line.decode("utf-8")
         words=words+line
 
     words = words.split('\n')
     words.pop()
-    return words
+
+    string = ''
+    for x in words:
+        string=string+x+", "
+
+    string = string[:-2]
+
+    return string
 
 #########################################################################
-
-print(get_words("n02391617"))
-print(get_words("n02078574"))
-print(get_words("n02073831"))
 
 '''
 filenames = tf.constant(get_images_name('images'))
 # `labels[i]` is the label for the image in `filenames[i].
-labels = tf.constant([0, 0])
+labels = tf.constant([get_words("n02078574"), get_words("n02109150")])
 
 dataset = read_images(filenames, labels)
 
@@ -100,9 +104,12 @@ while True:
     try:
         image, label = sess.run(next_element)
         list_images.append(image)
+        label=label.decode("utf-8")
         list_labels.append(label)
     except tf.errors.OutOfRangeError:
         break
 
+
 show_images(list_images, titles=list_labels)
 '''
+
