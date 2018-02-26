@@ -6,7 +6,6 @@ import os
 import tensorflow as tf
 import matplotlib.pyplot as plt
 import numpy as np
-#import furbito as figura
 
 
 #constantes
@@ -18,7 +17,7 @@ IMAGE_WIDTH=56
 def _parse_function(filename, label):
     image_string = tf.read_file(filename)
     image_decoded = tf.image.decode_jpeg(image_string)
-    #¿resized o cropped?
+
     image_resized = tf.image.resize_images(image_decoded, [IMAGE_HEIGHT, IMAGE_WIDTH], method=tf.image.ResizeMethod.NEAREST_NEIGHBOR)
     
     return image_resized, label
@@ -111,5 +110,8 @@ while True:
 
 
 show_images(list_images, titles=list_labels)
+
+sess.close()
+
 '''
 
