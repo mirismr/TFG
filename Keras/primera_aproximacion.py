@@ -6,14 +6,6 @@ from keras.layers import Activation, Dropout, Flatten, Dense
 import matplotlib.pyplot as plt
 import numpy as np
 
-#devuelve lista con los nombres de la imagen con formato:directory/imagen.JPEG
-def get_images_name(directory):
-    name_list = os.listdir(directory)
-    #depende del directorio desde donde se lance el programa habra que cambiar la formacion de la ruta
-    name_list = [directory + '/' + name for name in name_list]
-
-    return name_list
-
 #obtiene las etiquetas asociadas a un synset dado su wnid
 def get_words(wnid):
     link = "http://www.image-net.org/api/text/wordnet.synset.getwords?wnid="+wnid
@@ -179,11 +171,16 @@ img2 = 'data/predict/n01629819_409.JPEG'
 img3 = 'data/predict/n02094433_494.JPEG'
 
 print("Imagen ",img)
-print("Prediccion: ",map_class(predict_image(model, img), class_dictionary))
+print("Prediccion: ",get_words(map_class(predict_image(model, img), class_dictionary)), ", WNID: ",map_class(predict_image(model, img), class_dictionary))
 print("Imagen ",img2)
-print("Prediccion: ",map_class(predict_image(model, img2), class_dictionary))
+print("Prediccion: ",get_words(map_class(predict_image(model, img2), class_dictionary)),", WNID: ",map_class(predict_image(model, img2), class_dictionary))
 print("Imagen ",img3)
-print("Prediccion: ",map_class(predict_image(model, img3), class_dictionary))
+print("Prediccion: ",get_words(map_class(predict_image(model, img3), class_dictionary)), ", WNID: ",map_class(predict_image(model, img3), class_dictionary))
+
+#para la excepcion de tensorflow
+from keras import backend as K
+K.clear_session()
+#####################################################################
 
 # calculate predictions de un directorio completo
 #las imagenes de cada clase deben estar en un 
