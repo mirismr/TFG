@@ -64,6 +64,7 @@ def show_images(images, cols = 1, titles = None):
 
 
 model = Sequential()
+#input_shape tamaño imagen y canales
 model.add(Conv2D(32, (3, 3), input_shape=(64, 64, 3)))
 model.add(Activation('relu'))
 model.add(MaxPooling2D(pool_size=(2, 2)))
@@ -81,16 +82,18 @@ model.add(Flatten())  # this converts our 3D feature maps to 1D feature vectors
 model.add(Dense(64))
 model.add(Activation('relu'))
 model.add(Dropout(0.5))
-model.add(Dense(1))
-model.add(Activation('sigmoid'))
+#dense(3) -> numero de clases
+model.add(Dense(3))
+model.add(Activation('softmax'))
 
-#loss binary_crossentropy porque solo hay dos clases -> cambiar
-model.compile(loss='binary_crossentropy',
+model.compile(loss='categorical_crossentropy',
               optimizer='rmsprop',
               metrics=['accuracy'])
 
 batch_size = 16
 
+
+'''
 # this is the augmentation configuration we will use for training
 train_datagen = ImageDataGenerator(
         rescale=1./255,
@@ -109,14 +112,15 @@ train_generator = train_datagen.flow_from_directory(
         'data/train',  # this is the target directory
         target_size=(64, 64),  # all images will be resized to 64x64
         batch_size=batch_size,
-        class_mode='binary')  # since we use binary_crossentropy loss, we need binary labels
+        class_mode='categorical')  
+
 
 # this is a similar generator, for validation data
 validation_generator = test_datagen.flow_from_directory(
         'data/val',
         target_size=(64, 64),
         batch_size=batch_size,
-        class_mode='binary')
+        class_mode='categorical')
 
 model.fit_generator(
         train_generator,
@@ -127,22 +131,56 @@ model.fit_generator(
 
 model.save_weights('first_try.h5')
 
+#guardar class_dictionary en fichero
+class_dictionary = train_generator.class_indices
+print("Diccionario de clases: ", class_dictionary)
+'''
+
+model.load_weights("first_try.h5", by_name=False)
+#diccionario ->  {'n01629819': 1, 'n02094433': 2, 'n01443537': 0}
+
 # calculate predictions
-img = load_img('predict/n01443537_82.JPEG')
+'''
+predecir imagenes de un directorio
+
+pred_datagen = ImageDataGenerator(rescale=1./255)
+
+pred_generator = pred_datagen.flow_from_directory(
+        'data/predict',
+        target_size=(64, 64),
+        batch_size=1,
+        shuffle=False,
+        class_mode='categorical')
+
+
+filenames = pred_generator.filenames
+nb_samples = len(filenames)
+prediction = model.predict_generator(pred_generator,steps = nb_samples)
+print(filenames)
+print(prediction)
+'''
+
+'''
+predecir imagenes individuales
+img = load_img('predict/n01629819_47.JPEG')
+img2 = load_img('predict/n01443537_82.JPEG')
+img3 = load_img('predict/n02094433_22.JPEG')
+
 x = img_to_array(img)
 x = x.reshape((1,) + x.shape)
-
-img2 = load_img('predict/n01629819_45.JPEG')
-x2 = img_to_array(img2)
-x2 = x2.reshape((1,) + x2.shape)
-
 prediction = model.predict(x)
-prediction2 = model.predict(x2)
-
 print("Prediccion 1")
-for x in prediction:
-    print(x)
+print(prediction)
 
+x = img_to_array(img2)
+x = x.reshape((1,) + x.shape)
+prediction = model.predict(x)
 print("Prediccion 2")
-for x2 in prediction2:
-    print(x2)
+print(prediction)
+
+x = img_to_array(img3)
+x = x.reshape((1,) + x.shape)
+prediction = model.predict(x)
+print("Prediccion 3")
+print(prediction)
+'''
