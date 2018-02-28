@@ -162,8 +162,8 @@ def map_class(prediction, dictionary):
 ###############################################################################
 
 model = build_model(64,64,3,3)
-#class_dictionary = train_and_validate(model, 16, 'data/train', 'data/val', 64, 64, 'model_exported.h5', 'class_dictionary.json')
-class_dictionary = load_model(model, 'model_exported.h5', 'class_dictionary.json')
+class_dictionary = train_and_validate(model, 16, 'data/train', 'data/val', 64, 64, 'model_exported.h5', 'class_dictionary.json')
+#class_dictionary = load_model(model, 'model_exported.h5', 'class_dictionary.json')
 print(class_dictionary)
 
 img = 'data/predict/n01443537_203.JPEG'

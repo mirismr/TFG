@@ -1,5 +1,5 @@
 # Conceptos generales
-
+TensorFlow 1.5 es compatible con CUDA 9.0
 ## CNN on TF
 CNNs contains three components:
 
