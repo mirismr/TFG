@@ -181,7 +181,6 @@ print("Prediccion: ",get_words(map_class(predict_image(model, img3), class_dicti
 from keras import backend as K
 K.clear_session()
 #####################################################################
-
 # calculate predictions de un directorio completo
 #las imagenes de cada clase deben estar en un 
 #subdirectorio con el label como nombre del directorio
