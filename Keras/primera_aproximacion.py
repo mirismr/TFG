@@ -86,7 +86,7 @@ def build_model(width, height, channels, n_classes):
     return model
 
 
-def train_and_validate(model, batch_size, path_train, path_val, height, width, file_save_model, file_dictionary):
+def train_and_validate(model, batch_size, path_train, path_val, height, width, file_save_model, file_save_weigths, file_dictionary, file_history):
     train_datagen = ImageDataGenerator(
         rescale=1./255,
         shear_range=0.2,
@@ -114,23 +114,32 @@ def train_and_validate(model, batch_size, path_train, path_val, height, width, f
             batch_size=batch_size,
             class_mode='categorical')
 
-    model.fit_generator(
+    historyGenerated = model.fit_generator(
             train_generator,
             steps_per_epoch=1000 // batch_size,
             epochs=10,
             validation_data=validation_generator,
             validation_steps=800 // batch_size)
 
-    model.save_weights(file_save_model)
+    model.save_weights(file_save_weigths)
+    json_string = model.to_json()
+    f = open(file_save_model, "w")
+    f.write(json_string)
+    f.close()
     class_dictionary = train_generator.class_indices
 
     #str para que sea compatible con map_class
     class_dictionary = {str(val):str(key) for (key, val) in class_dictionary.items()}
 
     import json     
-    json = json.dumps(class_dictionary)
-    f = open(file_dictionary,"w")
-    f.write(json)
+    contentJson = json.dumps(class_dictionary)
+    f = open(file_dictionary, "w")
+    f.write(contentJson)
+    f.close()
+
+    contentJson = json.dumps(historyGenerated.history)
+    f = open(file_history, "w")
+    f.write(contentJson)
     f.close()
 
     return class_dictionary
@@ -159,13 +168,14 @@ def map_class(prediction, dictionary):
     return dictionary[str(prediction[0])]
 
 
-###############################################################################
+################################################################################
 
 model = build_model(64,64,3,3)
-class_dictionary = train_and_validate(model, 16, 'data/train', 'data/val', 64, 64, 'model_exported.h5', 'class_dictionary.json')
+class_dictionary = train_and_validate(model, 16, 'data/train', 'data/val', 64, 64, 'model_exported.h5', 'weights_exported.json','class_dictionary.json', 'data_history.json')
 #class_dictionary = load_model(model, 'model_exported.h5', 'class_dictionary.json')
 print(class_dictionary)
 
+'''
 img = 'data/predict/n01443537_203.JPEG'
 img2 = 'data/predict/n01629819_409.JPEG'
 img3 = 'data/predict/n02094433_494.JPEG'
@@ -176,10 +186,12 @@ print("Imagen ",img2)
 print("Prediccion: ",get_words(map_class(predict_image(model, img2), class_dictionary)),", WNID: ",map_class(predict_image(model, img2), class_dictionary))
 print("Imagen ",img3)
 print("Prediccion: ",get_words(map_class(predict_image(model, img3), class_dictionary)), ", WNID: ",map_class(predict_image(model, img3), class_dictionary))
+'''
 
 #para la excepcion de tensorflow
 from keras import backend as K
 K.clear_session()
+
 #####################################################################
 # calculate predictions de un directorio completo
 #las imagenes de cada clase deben estar en un 
