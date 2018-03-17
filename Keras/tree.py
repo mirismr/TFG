@@ -1,4 +1,5 @@
-from anytree import Node, RenderTree
+from anytree import Node, RenderTree, AsciiStyle, search
+import _pickle as cPickle
 
 #obtiene las etiquetas asociadas a un synset dado su wnid
 def get_words(wnid):
@@ -24,6 +25,7 @@ def get_words(wnid):
 
 def get_hyponyms(wnid):
 	link = "http://www.image-net.org/api/text/wordnet.structure.hyponym?wnid="+wnid
+	print(link)
 	import urllib.request
 	data = urllib.request.urlopen(link)
 
@@ -34,21 +36,44 @@ def get_hyponyms(wnid):
 
 	hyponyms = hyponyms.split('\r\n-')
 	hyponyms[-1] = hyponyms[-1][:-2]
+	hyponyms.remove(wnid)
 	
 	return hyponyms
 
+def is_leaf(wnid):
+	hyponyms = get_hyponyms(wnid)
+	
+	if hyponyms:
+		return False
+	else:
+		return True
 
-print(get_hyponyms("nfall11"))
+def build_tree(node):
+	hijos = get_hyponyms(node.name)
+	print(hijos)
+	for h in hijos:
+		hijo = Node(h, parent=node)
+		if not is_leaf(h):
+			build_tree(hijo)
 
-'''
-udo = Node("Udo")
-marc = Node("Marc", parent=udo)
-lian = Node("Lian", parent=marc)
-dan = Node("Dan", parent=udo)
-jet = Node("Jet", parent=dan)
-jan = Node("Jan", parent=dan)
-joe = Node("Joe", parent=dan)
+def search_in_tree(tree_wnid, wnid):
+	file_name = "tree_"+tree_wnid
+	root = cPickle.load(open(file_name, "rb"))
 
-for pre, fill, node in RenderTree(udo):
-	print("%s%s" % (pre, node.name))
-'''
+	result = search.find_by_attr(root, wnid)
+	
+	w = Walker()
+	walked = [w.walk(root, result)]
+
+	list_nodes = [walked[0][1].name]
+	for i in walked[0][2]:
+		list_nodes.append(i.name)
+	
+	return list_nodes
+
+
+raiz = Node("n00017222")
+build_tree(raiz)
+cPickle.dump(raiz, open( "tree_n00017222", "wb" ))
+raiz = cPickle.load(open("tree_n00017222", "rb"))
+print(RenderTree(raiz))
