@@ -73,7 +73,13 @@ def search_in_tree(tree_wnid, wnid):
 	return list_nodes
 
 
-raiz = cPickle.load(open("tree_n12992868", "rb"))
-exporter = JsonExporter()
-exporter.write(raiz, open("json_n12992868.json", "w"))
+#raiz = cPickle.load(open("tree_n12992868", "rb"))
+#exporter = JsonExporter()
+#exporter.write(raiz, open("json_n12992868.json", "w"))
 #print(RenderTree(raiz))
+
+'''
+raiz = Node("n12982915")
+build_tree(raiz)
+cPickle.dump(raiz, open("arbolprueba", "wb"))
+'''

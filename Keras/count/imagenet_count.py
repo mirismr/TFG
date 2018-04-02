@@ -1,6 +1,7 @@
 """Analyze the distribution of classes in ImageNet."""
 import codecs
 import _pickle as cPickle
+from anytree import LevelOrderIter
 
 '''
 Hay que pasarle fichero .txt con las URL de todas las imagenes
@@ -28,22 +29,36 @@ def count_images_per_class(file):
 
 '''Devuelve el nºimagenes de un nodo del arbol (incluido el y sus hijos)'''
 def get_number_images(nodo):
-	total = classes[nodo.name]
+	total = 0
+	if nodo.name in classes:
+		total = classes[nodo.name]
 
 	children = nodo.children
 	for c in children:
-		if not c.is_leaf:
-			total = total + get_number_images(c)
+		total = total + get_number_images(c)
 
 	return total
 
+'''elige aquellas clases que tengan al menos param:number_images
+	Se incluye las imagenes de sus hijos+propias
+'''
+def choose_classes(number_images, root):
+	result = []
+	for node in LevelOrderIter(root):
+		print(node.name, "\t", get_number_images(node))
+		if get_number_images(node) >= number_images:
+			result.append(node.name)
+
+	return result
 
 #classes = count_images_per_class("fall11_urls.txt")
 #cPickle.dump(classes, open("count_classes", "wb"))
-#probar sin funciona
+
 classes = cPickle.load(open("count_classes", "rb"))
-raiz = cPickle.load(open("../tree_sysnet_python/tree_n12992868", "rb"))
-print(get_number_images(raiz))
+raiz = cPickle.load(open("../tree_sysnet_python/tree_n00523513", "rb"))
+
+chosen_classes = choose_classes(5000, raiz)
+print(chosen_classes)
 
 '''
 class_counts = [count for _, count in classes.items()]
