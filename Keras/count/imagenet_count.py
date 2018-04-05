@@ -46,7 +46,7 @@ def choose_classes(number_images, root):
 	result = []
 	for node in LevelOrderIter(root):
 		print(node.name, "\t", get_number_images(node))
-		if get_number_images(node) >= number_images:
+		if get_number_images(node) >= number_images and not node.name in result:
 			result.append(node.name)
 
 	return result
@@ -55,10 +55,13 @@ def choose_classes(number_images, root):
 #cPickle.dump(classes, open("count_classes", "wb"))
 
 classes = cPickle.load(open("count_classes", "rb"))
-raiz = cPickle.load(open("../tree_sysnet_python/tree_n00523513", "rb"))
+raiz = cPickle.load(open("../tree_sysnet_python/tree_n00015388", "rb"))
 
 chosen_classes = choose_classes(5000, raiz)
 print(chosen_classes)
+print("total: ",len(chosen_classes))
+
+cPickle.dump(chosen_classes, open("chosen_classes_tree_n00015388", "wb"))
 
 '''
 class_counts = [count for _, count in classes.items()]
