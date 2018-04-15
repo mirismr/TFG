@@ -72,16 +72,17 @@ def search_in_tree(tree_wnid, wnid):
 	
 	return list_nodes
 
-#dado un wnid, construir el subarbol (hijos) -> funcion para
-#ver que clases entrenar de prueba
 
-#raiz = cPickle.load(open("tree_n12992868", "rb"))
-#exporter = JsonExporter()
-#exporter.write(raiz, open("json_n12992868.json", "w"))
-#print(RenderTree(raiz))
 
 '''
-raiz = Node("n12982915")
+raiz = Node("n01317541")
 build_tree(raiz)
-cPickle.dump(raiz, open("arbolprueba", "wb"))
+cPickle.dump(raiz, open("tree_n01317541", "wb"))
+'''
+'''
+raiz = cPickle.load(open("tree_n00015388", "rb"))
+hijo_n01317541 = search.find(raiz, lambda node: node.name == "n01317541")
+cPickle.dump(hijo_n01317541, open("tree_n01317541", "wb"))
+exporter = JsonExporter()
+exporter.write(hijo_n01317541, open("json_n01317541.json", "w"))
 '''
