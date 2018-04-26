@@ -170,8 +170,8 @@ def map_class(prediction, dictionary):
 
 ################################################################################
 
-model = build_model(64,64,3,3)
-class_dictionary = train_and_validate(model, 16, 'data/train', 'data/val', 64, 64, 'model_exported.h5', 'weights_exported.json','class_dictionary.json', 'data_history.json')
+model = build_model(64,64,3,200)
+class_dictionary = train_and_validate(model, 16, '/home/mirismr/Descargas/tiny-imagenet-200/train', '/home/mirismr/Descargas/tiny-imagenet-200/val', 64, 64, 'model_exported.h5', 'weights_exported.json','class_dictionary.json', 'data_history.json')
 #class_dictionary = load_model(model, 'model_exported.h5', 'class_dictionary.json')
 print(class_dictionary)
 

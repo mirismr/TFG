@@ -90,9 +90,10 @@ def choose_random_images(dir_src, dir_dest, sysnet, num_train, num_val, num_test
 
 	#eliminar repetidos porque en las descargas me descargo al propio y a los hijos,
 	#entonces puede que un hijo se repita luego como padre
-	if not os.path.exists(dir_dest_train+sysnet) and not os.path.exists(dir_dest_train+sysnet):
+	if not os.path.exists(dir_dest_train+sysnet) and not os.path.exists(dir_dest_val+sysnet) and not os.path.exists(dir_dest_test+sysnet):
 		os.makedirs(dir_dest_train+sysnet)
 		os.makedirs(dir_dest_val+sysnet)
+		os.makedirs(dir_dest_test+sysnet)
 
 		images = os.listdir(dir_src)
 
@@ -108,7 +109,7 @@ def choose_random_images(dir_src, dir_dest, sysnet, num_train, num_val, num_test
 			for img in val:
 				copyfile(dir_src+img,dir_dest_val+sysnet+"/"+img)
 			for img in test:
-				copyfile(dir_src+img,dir_dest_test+img)
+				copyfile(dir_src+img,dir_dest_test+sysnet+"/"+img)
 		else:
 			print("Not enough images in "+dir_src)
 	else:
