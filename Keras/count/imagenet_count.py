@@ -29,7 +29,7 @@ def count_images_per_class(file):
 
 
 
-'''Devuelve el nºimagenes de un nodo del arbol (incluido el y sus hijos) REVISAR'''
+'''Devuelve el n imagenes de un nodo del arbol (incluido el y sus hijos) REVISAR'''
 '''
 def get_number_images(nodo):
 	total = 0
@@ -69,47 +69,31 @@ def print_information(arbol, nodo_buscado):
 	print("SUMA TOTAL HIJOS: ", suma)
 	print("IMAGENES POR HIJO: ", (1000-classes[buscado.name])/len(buscado.children))
 
-def choose_random_images(dir_src, dir_dest, sysnet, num_train, num_val, num_test):
+def choose_random_images(dir_src, dir_dest, sysnet, num):
 	import os, random
 	from shutil import copyfile
 
 	dir_src = dir_src+"/"+sysnet+"/"
 
-	dir_dest_train = dir_dest+"train/"
-	dir_dest_val = dir_dest+"val/"
-	dir_dest_test = dir_dest+"test/"
-
 	print("Procesando --> "+sysnet)
 
-	if not os.path.exists(dir_dest_train):
-			os.makedirs(dir_dest_train)
-	if not os.path.exists(dir_dest_val):
-			os.makedirs(dir_dest_val)
-	if not os.path.exists(dir_dest_test):
-			os.makedirs(dir_dest_test)
+	if not os.path.exists(dir_dest):
+			os.makedirs(dir_dest)
 
 	#eliminar repetidos porque en las descargas me descargo al propio y a los hijos,
 	#entonces puede que un hijo se repita luego como padre
-	if not os.path.exists(dir_dest_train+sysnet) and not os.path.exists(dir_dest_val+sysnet) and not os.path.exists(dir_dest_test+sysnet):
-		os.makedirs(dir_dest_train+sysnet)
-		os.makedirs(dir_dest_val+sysnet)
-		os.makedirs(dir_dest_test+sysnet)
+	if not os.path.exists(dir_dest+sysnet):
+		os.makedirs(dir_dest+sysnet)
 
 		images = os.listdir(dir_src)
 
-		if len(images) >= num_train+num_val+num_test:
+		if len(images) >= num:
 			random.shuffle(images)
 
-			train = images[:num_train]
-			val = images[num_train:num_train+num_val]
-			test = images[num_train+num_val:num_train+num_val+num_test]
+			images_random = images[:num]
 
-			for img in train:
-				copyfile(dir_src+img,dir_dest_train+sysnet+"/"+img)
-			for img in val:
-				copyfile(dir_src+img,dir_dest_val+sysnet+"/"+img)
-			for img in test:
-				copyfile(dir_src+img,dir_dest_test+sysnet+"/"+img)
+			for img in images_random:
+				copyfile(dir_src+img,dir_dest+sysnet+"/"+img)
 		else:
 			print("Not enough images in "+dir_src)
 	else:
@@ -120,11 +104,8 @@ import os
 ruta_choosen = "/home/mirismr/Descargas/choosen/"
 ruta_aws = "/home/mirismr/Descargas/aws/"
 choosen = os.listdir(ruta_choosen)
-for tree in choosen:
-	ruta_tree = ruta_choosen+tree
-	sysnets = os.listdir(ruta_tree)
-	for s in sysnets:
-		choose_random_images(ruta_tree, ruta_aws, s, 800, 100, 100)
+for s in choosen:
+	choose_random_images(ruta_choosen, ruta_aws, s, 1000)
 
 
 
