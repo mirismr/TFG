@@ -24,30 +24,13 @@ from keras.models import Sequential
 
 WEIGHTS_PATH_NO_TOP = 'https://github.com/fchollet/deep-learning-models/releases/download/v0.1/vgg16_weights_tf_dim_ordering_tf_kernels_notop.h5'
 
-def VGG16(type_top=enum_models.typeA, fine_tune=False, num_classes=10):
+def VGG16():
     '''Instantiate the VGG16 architecture,
     optionally loading weights pre-trained
-    on ImageNet. Note that when using TensorFlow,
-    for best performance you should set
-    `image_dim_ordering="tf"` in your Keras config
-    at ~/.keras/keras.json.
-
-    The model and the weights are compatible with both
-    TensorFlow and Theano. The dimension ordering
-    convention used by the model is the one
-    specified in your Keras config file.
-
-    # Arguments
-        type_top: type of top to include (typeA, typeB, typeC)
-        fine_tune: use fine_tune or not
-        weights: one of `None` (random initialization)
-            or "imagenet" (pre-training on ImageNet).
-        num_classes: number of clases that we want to train
-        input_tensor: optional Keras tensor (i.e. output of `layers.Input()`)
-            to use as image input for the model.
+    on ImageNet. 
 
     # Returns
-        A Keras model instance.
+        A Keras sequential instance.
     '''
     
     model = Sequential()
@@ -68,8 +51,6 @@ def VGG16(type_top=enum_models.typeA, fine_tune=False, num_classes=10):
     layer = MaxPooling2D((2, 2), strides=(2, 2), name='block2_pool')
     model.add(layer)
 
-    #modelo hay que guardarlo como h5 (model.save)
-    #en java MultiLayerNetwork network = KerasModelImport.importKerasSequentialModelAndWeights("PATH TO YOUR H5 FILE")
     # Block 3
     layer = Conv2D(256, (3, 3), activation='relu', padding='same', name='block3_conv1')
     model.add(layer)
@@ -109,8 +90,9 @@ def VGG16(type_top=enum_models.typeA, fine_tune=False, num_classes=10):
 
 
 if __name__ == '__main__':
-
-    model = VGG16(type_top=enum_models.typeA, fine_tune=False, num_classes=3)     
+ 
+    model = VGG16()     
     print(model.summary())
+    print(len(model.layers))
 
    
