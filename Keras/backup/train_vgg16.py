@@ -79,7 +79,7 @@ def k_fold_cross_validation(data, labels, type_top):
         num_classes = len(np.unique(labels))
         predict_size_train = int(math.ceil(nb_train_samples / batch_size))
 
-        model = VGG16(num_classes=num_classes)
+        model = VGG16()
         
         bottleneck_features_train = model.predict_generator(generator, predict_size_train, verbose=1)
         np.save('bottlenecks/bottleneck_features_train_fold_'+str(j)+'.npy', bottleneck_features_train)
@@ -151,7 +151,7 @@ def k_fold_cross_validation(data, labels, type_top):
         training_time = time.process_time() - t
 
         ###################################test data######################################################
-        model = VGG16(num_classes=num_classes)
+        model = VGG16()
         # build the final model
         for layer in top_model.layers:
            model.add(layer)
@@ -210,7 +210,7 @@ def fine_tune(data, labels, best_top_model, type_top, layers_fine_tune):
 
         num_classes = len(np.unique(labels))
 
-        model = VGG16(num_classes=num_classes)
+        model = VGG16()
 
         top_model = Sequential()
 

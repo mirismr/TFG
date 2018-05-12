@@ -1,13 +1,26 @@
-def obtainBestTopModel(path):
-	pass
-
-def obtainBestFineTuneModel(path):
-	pass
-
-def average(valuesList):
-	pass
-
 def chooseRandomImages(srcPath, destPathSelected, destPathNoSelected, numImages):
+	"""
+    Choose a number of random images from a directory.
+    If there is more images than numImages, move to destPathNoSelected.
+	It creates the necessary directories. 
+
+    Parameters
+    ----------
+    srcPath : string
+        Path from choose the images.
+    destPathSelected : string
+    	Path where we move the selected images.
+    destPathNoSelected : string
+    	Path where we move the non selected images.
+    numImages : int
+    	Number of images to be selected.
+        
+
+    Returns
+    -------
+    sysnets: list
+		classes' list that the model will learn
+    """
 	import os, random
 	from shutil import copyfile
 
@@ -24,10 +37,6 @@ def chooseRandomImages(srcPath, destPathSelected, destPathNoSelected, numImages)
 
 		print("Processing --> "+sysnet)
 
-		
-
-		#eliminar repetidos porque en las descargas me descargo al propio y a los hijos,
-		#entonces puede que un hijo se repita luego como padre
 		if not os.path.exists(destPathSelected+sysnet):
 			os.makedirs(destPathSelected+sysnet)
 			os.makedirs(destPathNoSelected+"organized/"+sysnet)
@@ -51,8 +60,28 @@ def chooseRandomImages(srcPath, destPathSelected, destPathNoSelected, numImages)
 		else:
 			print("Duplicated ",sysnet, ". Not copied.")
 
-if __name__ == '__main__':
-	srcPath = "/home/mirismr/Descargas/choosen/"
-	destPathSelected = "/home/mirismr/Descargas/data/"
-	destPathNoSelected = "/home/mirismr/Descargas/noSelectedData/"
-	chooseRandomImages(srcPath, destPathSelected, destPathNoSelected, 1000)
+	return sysnets
+
+def obtainNumSplitKFold(numExamples, percentageTest):
+	"""
+    Obtain how many split we should use for K Fold Cross Validation.
+
+    Parameters
+    ----------
+    numExamples : int
+        Number of examples per class.
+    percentageTest : int
+        Percentage's test per class between 0-100
+
+    Returns
+    -------
+    int
+        Number of splits
+    """
+	return int(numExamples / (numExamples*percentageTest/100))
+
+def obtainBestTopModel(path):
+	pass
+
+def obtainBestFineTuneModel(path):
+	pass
