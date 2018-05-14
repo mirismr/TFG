@@ -14,7 +14,7 @@ import cv2
 from enum_models import enum_models
 
 # number of epochs to train top model
-epochs = 5
+epochs = 1
 # batch size
 batch_size = 16
 
@@ -27,7 +27,8 @@ def load_data(path, target_size):
     class_dictionary = {}
 
     print('Read data images')
-    folders = ['n02085374', 'n02121808', 'n01910747','n02317335', 'n01922303', 'n01816887', 'n01859325', 'n02484322', 'n02504458', 'n01887787']
+    #folders = ['n02085374', 'n02121808', 'n01910747','n02317335', 'n01922303', 'n01816887', 'n01859325', 'n02484322', 'n02504458', 'n01887787']
+    folders = ['n02085374', 'n02121808']#, 'n01910747','n02317335', 'n01922303', 'n01816887', 'n01859325', 'n02484322', 'n02504458', 'n01887787']
 
     for fld in folders:
         index = folders.index(fld)
@@ -81,8 +82,8 @@ def k_fold_cross_validation(data, labels, type_top):
 
         model = VGG16()
         
-        bottleneck_features_train = model.predict_generator(generator, predict_size_train, verbose=1)
-        np.save('bottlenecks/bottleneck_features_train_fold_'+str(j)+'.npy', bottleneck_features_train)
+        #bottleneck_features_train = model.predict_generator(generator, predict_size_train, verbose=1)
+        #np.save('bottlenecks/bottleneck_features_train_fold_'+str(j)+'.npy', bottleneck_features_train)
 
 
         test_datagen = ImageDataGenerator(rescale=1. / 255)
@@ -90,8 +91,8 @@ def k_fold_cross_validation(data, labels, type_top):
         nb_validation_samples = len(val_idx)
         predict_size_validation = int(math.ceil(nb_validation_samples / batch_size))
 
-        bottleneck_features_validation = model.predict_generator(generator, predict_size_validation, verbose=1)
-        np.save('bottlenecks/bottleneck_features_validation_fold_'+str(j)+'.npy',bottleneck_features_validation)
+        #bottleneck_features_validation = model.predict_generator(generator, predict_size_validation, verbose=1)
+        #np.save('bottlenecks/bottleneck_features_validation_fold_'+str(j)+'.npy',bottleneck_features_validation)
 
         ################################################top model###############################################
 
@@ -138,7 +139,7 @@ def k_fold_cross_validation(data, labels, type_top):
             top_model.add(layer)
 
 
-        top_model.compile(optimizer='rmsprop',
+        top_model.compile(optimizer=optimizers.RMSprop(lr=1e-6),
                       loss='categorical_crossentropy', metrics=['accuracy'])
 
         import time
@@ -156,6 +157,8 @@ def k_fold_cross_validation(data, labels, type_top):
         for layer in top_model.layers:
            model.add(layer)
 
+        print(model.summary())
+
         test_datagen = ImageDataGenerator(rescale=1. / 255)
         generator_test = test_datagen.flow(x_valid, validation_labels, shuffle=False, batch_size = batch_size)
 
@@ -164,8 +167,8 @@ def k_fold_cross_validation(data, labels, type_top):
         model.compile(optimizer='rmsprop', loss='categorical_crossentropy', metrics=['accuracy'])
         test_loss, test_accuracy = model.evaluate_generator(generator_test, steps=nb_test_samples/batch_size)
 
-        #print("[INFO] TEST accuracy: {:.2f}%".format(test_accuracy * 100))
-        #print("[INFO] Test loss: {}".format(test_loss))
+        print("[INFO] TEST accuracy: {:.2f}%".format(test_accuracy * 100))
+        print("[INFO] Test loss: {}".format(test_loss))
 
         ####################################save info#######################################################
         
@@ -328,7 +331,7 @@ def fine_tune(data, labels, best_top_model, type_top, layers_fine_tune):
 
 
 data, labels = load_data('/home/mirismr/Descargas/data/', (224, 224))
-k_fold_cross_validation(data, labels, enum_models.typeB)
+k_fold_cross_validation(data, labels, enum_models.typeA)
 #fine_tune(data, labels, 'top_model/top_model_exported_fold_0.h5',enum_models.typeB, 15)
 
 

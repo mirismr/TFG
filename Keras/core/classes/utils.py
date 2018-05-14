@@ -1,26 +1,26 @@
 def chooseRandomImages(srcPath, destPathSelected, destPathNoSelected, numImages):
 	"""
-    Choose a number of random images from a directory.
-    If there is more images than numImages, move to destPathNoSelected.
+	Choose a number of random images from a directory.
+	If there is more images than numImages, move to destPathNoSelected.
 	It creates the necessary directories. 
 
-    Parameters
-    ----------
-    srcPath : string
-        Path from choose the images.
-    destPathSelected : string
-    	Path where we move the selected images.
-    destPathNoSelected : string
-    	Path where we move the non selected images.
-    numImages : int
-    	Number of images to be selected.
-        
+	Parameters
+	----------
+	srcPath : string
+		Path from choose the images.
+	destPathSelected : string
+		Path where we move the selected images.
+	destPathNoSelected : string
+		Path where we move the non selected images.
+	numImages : int
+		Number of images to be selected.
+		
 
-    Returns
-    -------
-    sysnets: list
+	Returns
+	-------
+	sysnets: list
 		classes' list that the model will learn
-    """
+	"""
 	import os, random
 	from shutil import copyfile
 
@@ -64,24 +64,60 @@ def chooseRandomImages(srcPath, destPathSelected, destPathNoSelected, numImages)
 
 def obtainNumSplitKFold(numExamples, percentageTest):
 	"""
-    Obtain how many split we should use for K Fold Cross Validation.
+	Obtain how many split we should use for K Fold Cross Validation.
 
-    Parameters
-    ----------
-    numExamples : int
-        Number of examples per class.
-    percentageTest : int
-        Percentage's test per class between 0-100
+	Parameters
+	----------
+	numExamples : int
+		Number of examples per class.
+	percentageTest : int
+		Percentage's test per class between 0-100
 
-    Returns
-    -------
-    int
-        Number of splits
-    """
+	Returns
+	-------
+	int
+		Number of splits
+	"""
 	return int(numExamples / (numExamples*percentageTest/100))
 
-def obtainBestTopModel(path):
-	pass
+def transformLabelsToCategorical(labels, numClasses):
+	from keras.utils.np_utils import to_categorical
+	
+	return to_categorical(labels, num_classes=numClasses)
 
-def obtainBestFineTuneModel(path):
-	pass
+def obtainBestModel(path):
+	import json
+	import os
+	pathGeneralData = path + "generalData/"
+	pathHistory = path + "dataHistory/"
+	data = []
+	accuracies = []
+
+	dataFiles = os.listdir(pathGeneralData)
+	for f in dataFiles:	
+		with open(pathGeneralData+f) as jsonData:
+			data.append(json.load(jsonData))
+
+	dataFilesHistory = os.listdir(pathHistory)
+
+	for d in data:
+		accuracies.append(d['testAccuracy'])
+
+	maxAccuracy = max(accuracies)
+	indexMax = accuracies.index(maxAccuracy)
+	
+	pathModel = ''
+	topType = ''
+	with open(pathGeneralData+dataFiles[indexMax], 'r') as jsonData:
+		jsonLoad = json.load(jsonData)
+		pathModel = jsonLoad['pathModel']
+		topType = jsonLoad['topType']
+
+	# full path to model, topType, path generalData, path history
+	return pathModel, topType, pathGeneralData+dataFiles[indexMax], pathHistory+dataFilesHistory[indexMax]
+
+def saveFinalModelsPath(informationBestVgg16):
+	from shutil import copyfile
+	copyfile(informationBestVgg16[0], "finalModels/weights/final_model_vgg16.h5")
+	copyfile(informationBestVgg16[2], "finalModels/generalData/general_data_vgg16.json")
+	copyfile(informationBestVgg16[3], "finalModels/dataHistory/history_vgg16.h5")

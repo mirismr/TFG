@@ -1,3 +1,5 @@
+import numpy as np
+
 class Logger(object):
     def __init__(self, path):
         self.path = path
@@ -17,6 +19,13 @@ class Logger(object):
 
         """
         import os
+        if not os.path.exists("finalModels/generalData/"):
+            os.makedirs("finalModels/generalData/")
+        if not os.path.exists("finalModels/weights/"):
+            os.makedirs("finalModels/weights/")
+        if not os.path.exists("finalModels/dataHistory/"):
+            os.makedirs("finalModels/dataHistory/")
+
         if not os.path.exists(self.path):
             os.makedirs(self.path)
 
@@ -47,13 +56,47 @@ class Logger(object):
         f.write(contentJson)
         f.close()
 
-    def saveBottlenecks(bottlenecksFeaturesTrain, bottlenecksFeaturesValidation):
-        np.save(self.path+'bottlenecks/bottleneck_features_train_fold_'+str(j)+'.npy', bottlenecksFeaturesTrain)
-        np.save(self.path+'bottlenecks/bottleneck_features_validation_fold_'+str(j)+'.npy',bottlenecksFeaturesValidation)
+    def saveBottlenecks(self, bottlenecksFeaturesTrain, bottlenecksFeaturesValidation, fold):
+        np.save(self.path+'topModel/bottlenecks/bottleneck_features_train_fold_'+str(fold)+'.npy', bottlenecksFeaturesTrain)
+        np.save(self.path+'topModel/bottlenecks/bottleneck_features_validation_fold_'+str(fold)+'.npy',bottlenecksFeaturesValidation)
 
-    def saveWeights(self, topModel, finalModel, fold):
-    	pass
+    def loadBottlenecks(self, fold):
+        bottlenecksFeaturesTrain = np.load(self.path+'topModel/bottlenecks/bottleneck_features_train_fold_'+str(fold)+'.npy')
+        bottlenecksFeaturesValidation = np.load(self.path+'topModel/bottlenecks/bottleneck_features_validation_fold_'+str(fold)+'.npy')
 
-    def saveData(self, history, resultTest, trainingTime, fold, topType):
-    	pass
+        return bottlenecksFeaturesTrain, bottlenecksFeaturesValidation
 
+    def saveWeightsTopModel(self, model, fold):
+        model.topModel.save(self.path+'topModel/weights/top_model_exported_fold_'+str(fold)+"_"+str(model.topType.value)+'.h5')
+
+    def saveWeightsFineTune(self, model, fold, numLayersFreeze):
+        model.save(self.path+'fineTune/weights/final_model_exported_fold_'+str(fold)+"_"+str(numLayersFreeze)+'.h5')
+
+    def loadWeights(self, model, path):
+        model.load_weights(path)
+
+        return model
+
+    def saveDataTopModel(self, historyGenerated, resultTest, trainingTime, fold, topType):
+        import json  
+        contentJson = json.dumps(historyGenerated.history, indent=4, sort_keys=True)
+        f = open(self.path+'topModel/dataHistory/top_model_history_fold_'+str(fold)+"_"+str(topType.value)+'.json', "w")
+        f.write(contentJson)
+        f.close()
+
+        contentJson = json.dumps({'testLoss':resultTest[0], 'testAccuracy':resultTest[1], 'trainingTime': trainingTime, 'pathModel': self.path+'topModel/weights/top_model_exported_fold_'+str(fold)+"_"+str(topType.value)+'.h5', 'topType':str(topType.name)})
+        f = open(self.path+'topModel/generalData/general_data_fold_'+str(fold)+"_"+str(topType.value)+'.json', "w")
+        f.write(contentJson)
+        f.close()
+
+    def saveDataFineTuneModel(self, historyGenerated, resultTest, trainingTime, fold, numLayersFreeze, topType):
+        import json  
+        contentJson = json.dumps(historyGenerated.history, indent=4, sort_keys=True)
+        f = open(self.path+'fineTune/dataHistory/top_model_history_fold_'+str(fold)+"_"+str(numLayersFreeze)+'.json', "w")
+        f.write(contentJson)
+        f.close()
+
+        contentJson = json.dumps({'testLoss':resultTest[0], 'testAccuracy':resultTest[1], 'trainingTime': trainingTime, 'pathModel': self.path+'fineTune/weights/final_model_exported_fold_'+str(fold)+"_"+str(numLayersFreeze)+'.h5', 'topType':str(topType.name)})
+        f = open(self.path+'fineTune/generalData/general_data_fold_'+str(fold)+"_"+str(numLayersFreeze)+'.json', "w")
+        f.write(contentJson)
+        f.close()
