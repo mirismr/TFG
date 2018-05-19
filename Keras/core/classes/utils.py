@@ -98,7 +98,11 @@ def obtainBestModel(path):
 		with open(pathGeneralData+f) as jsonData:
 			data.append(json.load(jsonData))
 
-	dataFilesHistory = os.listdir(pathHistory)
+	dataFilesHistoryA = os.listdir(pathHistory+"/typeA/")
+	dataFilesHistoryB = os.listdir(pathHistory+"/typeB/")
+	dataFilesHistoryC = os.listdir(pathHistory+"/typeC/")
+
+	dataFilesHistory = dataFilesHistoryA+dataFilesHistoryB+dataFilesHistoryC
 
 	for d in data:
 		accuracies.append(d['testAccuracy'])

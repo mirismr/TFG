@@ -154,7 +154,7 @@ def load_model(model, file_model, file_dictionary):
 
 
 def predict_image(model, img_path, hot_encoding=False):
-    img = load_img(img_path)
+    img = load_img(img_path, target_size=(224,224,3))
     x = img_to_array(img)
     x = x.reshape((1,) + x.shape)
     if (hot_encoding):
@@ -169,12 +169,75 @@ def map_class(prediction, dictionary):
 
 
 ################################################################################
+model = Sequential()
+model.load('final_model_exported_fold_0_15.h5')
 
-model = build_model(64,64,3,200)
-class_dictionary = train_and_validate(model, 16, '/home/mirismr/Descargas/tiny-imagenet-200/train', '/home/mirismr/Descargas/tiny-imagenet-200/val', 64, 64, 'model_exported.h5', 'weights_exported.json','class_dictionary.json', 'data_history.json')
+#model = build_model(64,64,3,200)
+#class_dictionary = train_and_validate(model, 16, '/home/mirismr/Descargas/tiny-imagenet-200/train', '/home/mirismr/Descargas/tiny-imagenet-200/val', 64, 64, 'model_exported.h5', 'weights_exported.json','class_dictionary.json', 'data_history.json')
 #class_dictionary = load_model(model, 'model_exported.h5', 'class_dictionary.json')
-print(class_dictionary)
+#print(class_dictionary)
 
+'''
+model = Sequential()
+layer = Conv2D(64, (3, 3), activation='relu', padding='same', name='block1_conv1', input_shape=(224,224,3))
+model.add(layer)
+layer = Conv2D(64, (3, 3),  activation='relu', padding='same', name='block1_conv2')
+model.add(layer)
+layer = MaxPooling2D((2, 2), strides=(2, 2), name='block1_pool')
+model.add(layer)
+
+# Block2
+layer = Conv2D(128, (3, 3), activation='relu', padding='same', name='block2_conv1')
+model.add(layer)
+layer = Conv2D(128, (3, 3), activation='relu', padding='same', name='block2_conv2')
+model.add(layer)
+layer = MaxPooling2D((2, 2), strides=(2, 2), name='block2_pool')
+model.add(layer)
+
+# Block 3
+layer = Conv2D(256, (3, 3), activation='relu', padding='same', name='block3_conv1')
+model.add(layer)
+layer = Conv2D(256, (3, 3), activation='relu', padding='same', name='block3_conv2')
+model.add(layer)
+layer = Conv2D(256, (3, 3), activation='relu', padding='same', name='block3_conv3')
+model.add(layer)
+layer = MaxPooling2D((2, 2), strides=(2, 2), name='block3_pool')
+model.add(layer)
+
+# Block 4
+layer = Conv2D(512, (3, 3), activation='relu', padding='same', name='block4_conv1')
+model.add(layer)
+layer = Conv2D(512, (3, 3), activation='relu', padding='same', name='block4_conv2')
+model.add(layer)
+layer = Conv2D(512, (3, 3), activation='relu', padding='same', name='block4_conv3')
+model.add(layer)
+layer = MaxPooling2D((2, 2), strides=(2, 2), name='block4_pool')
+model.add(layer)
+
+# Block 5
+layer = Conv2D(512, (3, 3), activation='relu', padding='same', name='block5_conv1')
+model.add(layer)
+layer = Conv2D(512, (3, 3), activation='relu', padding='same', name='block5_conv2')
+model.add(layer)
+layer = Conv2D(512, (3, 3), activation='relu', padding='same', name='block5_conv3')
+model.add(layer)
+layer = MaxPooling2D((2, 2), strides=(2, 2), name='block5_pool')
+model.add(layer)
+
+layer = Flatten(name='flatten')
+model.add(layer)
+layer = Dense(4096, activation='relu', name='fc1')
+model.add(layer)
+layer = Dense(4096, activation='relu', name='fc2')
+model.add(layer)
+layer = Dense(3, activation='softmax', name='predictions')
+model.add(layer)
+
+model.load_weights('final_model_exported_fold_0_15.h5')
+img = '/home/mirismr/MEGA/dual.jpg'
+
+print(predict_image(model, img, True))
+'''
 '''
 img = 'data/predict/n01443537_203.JPEG'
 img2 = 'data/predict/n01629819_409.JPEG'

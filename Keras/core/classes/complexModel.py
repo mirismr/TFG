@@ -5,7 +5,7 @@ from classes import modelType
 from keras.preprocessing.image import ImageDataGenerator
 
 
-class Model(object):
+class ComplexModel(object):
 	"""
 	Model that represent a concrete neuronal network.
 
@@ -39,7 +39,7 @@ class Model(object):
 		self.inputSize = inputSize
 		self.logger = Logger(pathToModel)
 		self.batchSize = 16
-		self.epochs = 20
+		self.epochs = 20 #cambiar a 20
 		self.numClasses = -1
 
 		self.logger.createStructureLogs()
@@ -73,7 +73,7 @@ class Model(object):
 		if (log): 
 			print('[INFO] Reading data images')
 		folders = os.listdir(path)
-		#folders = ['n02085374', 'n02121808', 'n01910747']#,'n02317335', 'n01922303', 'n01816887', 'n01859325', 'n02484322', 'n02504458', 'n01887787']
+		folders = ['n02085374', 'n02121808', 'n01910747']#,'n02317335', 'n01922303', 'n01816887', 'n01859325', 'n02484322', 'n02504458', 'n01887787']
 		for fld in folders:
 			index = folders.index(fld)
 			if (log): 
@@ -93,10 +93,23 @@ class Model(object):
 		self.logger.saveClassDictionary(classDictionary)
 		return np.array(data), np.array(labels), len(folders)
 
-	def generateBottlenecks(self, trainData, trainLabels, validData, validLabels, fold):
-		import math
+	def buildTopModel(self, topType):
+		self.model.buildTopModel(topType, self.numClasses)
 
-		print('[INFO] Generating bottlenecks')
+	def trainTopModel(self, trainData, trainLabels, validData, validLabels, fold):
+		from keras import optimizers
+		import math
+		print('[INFO] Training top model type '+(str(self.model.topType)))
+		
+		self.model.topModel.compile(optimizer='rmsprop', loss='categorical_crossentropy', metrics=['accuracy'], )	
+		
+		trainSamples = len(trainLabels)
+		validationSamples = len(validLabels)
+		predictSizeTrain = int(math.ceil(trainSamples / self.batchSize))
+		predictSizeValidation = int(math.ceil(validationSamples / self.batchSize))
+		
+		trainLabels = utils.transformLabelsToCategorical(trainLabels, self.numClasses)
+		validLabels = utils.transformLabelsToCategorical(validLabels, self.numClasses)
 			
 		# Data augmentation
 		trainDatagen = ImageDataGenerator(
@@ -104,72 +117,29 @@ class Model(object):
 			shear_range=0.2,
 			zoom_range=0.2,
 			horizontal_flip=True)       
-		generator = trainDatagen.flow(trainData, trainLabels, shuffle=False, batch_size = self.batchSize)
+		generatorTrain = trainDatagen.flow(trainData, trainLabels, shuffle=False, batch_size = self.batchSize)
 
-		trainSamples = len(trainLabels)
-		predictSizeTrain = int(math.ceil(trainSamples / self.batchSize))
+		valDatagen = ImageDataGenerator(rescale=1. / 255)
+		generatorVal = valDatagen.flow(validData, validLabels, shuffle=False, batch_size = self.batchSize)
 		
-		bottlenecksFeaturesTrain = self.model.baseModel.predict_generator(generator, predictSizeTrain, verbose=1)
-
-		testDatagen = ImageDataGenerator(rescale=1. / 255)
-		generator = testDatagen.flow(validData, validLabels, shuffle=False, batch_size = self.batchSize)
-		
-		validationSamples = len(validLabels)
-		predictSizeValidation = int(math.ceil(validationSamples / self.batchSize))
-
-		bottlenecksFeaturesValidation = self.model.baseModel.predict_generator(generator, predictSizeValidation, verbose=1)
-
-		self.logger.saveBottlenecks(bottlenecksFeaturesTrain, bottlenecksFeaturesValidation, fold)
-
-		del bottlenecksFeaturesValidation
-		del bottlenecksFeaturesTrain
-
-		import gc
-		gc.collect()
-
-
-	def buildTopModel(self, topType):
-		self.model.buildTopModel(topType, self.numClasses)
-
-	def trainTopModel(self, trainLabels, validLabels, fold):
-		from keras import optimizers
-		print('[INFO] Training top model type '+(str(self.model.topType)))
-		trainData, validationData = self.logger.loadBottlenecks(fold)
-		trainLabels = utils.transformLabelsToCategorical(trainLabels, self.numClasses)
-		validationLabels = utils.transformLabelsToCategorical(validLabels, self.numClasses)
-
-		self.model.topModel.compile(optimizer=optimizers.RMSprop(lr=1e-6), loss='categorical_crossentropy', metrics=['accuracy'])
-
 		import time
 		t = time.process_time()
-		historyGenerated = self.model.topModel.fit(trainData, trainLabels,
+		historyGenerated = self.model.topModel.fit_generator(
+							generatorTrain,
+							steps_per_epoch=predictSizeTrain,
 							epochs=self.epochs,
-							batch_size=self.batchSize,
-							validation_data=(validationData, validationLabels)
-							)
+							validation_data=generatorVal,
+							validation_steps=predictSizeValidation)
 		
 		trainingTime = time.process_time() - t
 
 		self.logger.saveWeightsTopModel(self.model, fold)
-
+		
 		return trainingTime, historyGenerated
-
-
-	def addTopModel(self):
-		from keras.models import Sequential
-
-		fullModel = Sequential()
-		for layer in self.model.baseModel.layers:
-			fullModel.add(layer)
-
-		for layer in self.model.topModel.layers:
-		   fullModel.add(layer)
-
-		return fullModel
 
 	def testTopModel(self, validationData, validationLabels, trainingTime, historyGenerated, fold):
 		print('[INFO] testing top model type '+(str(self.model.topType)))
-		fullModel = self.addTopModel()
+
 		validationSamples = len(validationLabels)
 
 		validationLabels = utils.transformLabelsToCategorical(validationLabels, self.numClasses)
@@ -177,36 +147,28 @@ class Model(object):
 		testDatagen = ImageDataGenerator(rescale=1. / 255)
 		generator = testDatagen.flow(validationData, validationLabels, shuffle=False, batch_size = self.batchSize)
 
-		from keras import optimizers
-		fullModel.compile(optimizer=optimizers.RMSprop(lr=1e-6), loss='categorical_crossentropy', metrics=['accuracy'])
-		testLoss, testAccuracy = fullModel.evaluate_generator(generator, steps=validationSamples/self.batchSize)
+		testLoss, testAccuracy = self.model.topModel.evaluate_generator(generator, steps=validationSamples/self.batchSize)
 
 		self.logger.saveDataTopModel(historyGenerated, (testLoss, testAccuracy), trainingTime, fold, self.model.topType)
 
-		import gc
-		del fullModel
-		gc.collect()
-
 	def fineTune(self, trainData, trainLabels, validData, validLabels, numLayersFreeze, bestTopType, pathBestTop, fold):
 		import math
-
+		self.buildTopModel(bestTopType)
 		self.model.topModel = self.logger.loadWeights(self.model.topModel, pathBestTop)
 		self.model.topType = modelType.modelType[bestTopType]
 
-		fullModel = self.addTopModel()
-
 		# Freeze layers
-		for layer in fullModel.layers[:numLayersFreeze]:
+		for layer in self.model.topModel.layers[:numLayersFreeze]:
 			layer.trainable = False
 
-		import tensorflow as tf
-		run_opts = tf.RunOptions(report_tensor_allocations_upon_oom = True)
+		for layer in self.mode.topModel.layers[numLayersFreeze:]:
+			layer.trainable = True
 
 		from keras import optimizers
-		fullModel.compile(loss='categorical_crossentropy',
-			optimizer=optimizers.SGD(lr=1e-4, momentum=0.9),
-			metrics=['accuracy'], options = run_opts)
-		
+		self.model.topModel.compile(loss='categorical_crossentropy',
+			optimizer=optimizers.SGD(lr=1e-2, momentum=0.9),
+			metrics=['accuracy'])
+
 
 		trainSamples = len(trainLabels)
 		validationSamples = len(validLabels)
@@ -231,7 +193,7 @@ class Model(object):
 		
 		import time
 		t = time.process_time()
-		historyGenerated = fullModel.fit_generator(
+		historyGenerated = self.model.topModel.fit_generator(
 							generatorTrain,
 							steps_per_epoch=predictSizeTrain,
 							epochs=10,
@@ -240,19 +202,12 @@ class Model(object):
 		
 		trainingTime = time.process_time() - t
 
-		self.logger.saveWeightsFineTune(fullModel, fold, numLayersFreeze)
-
-		
-		import gc
-		del fullModel
-		gc.collect()
+		self.logger.saveWeightsFineTune(self.model.topModel, fold, numLayersFreeze)
 		
 		return trainingTime, historyGenerated
 
-
 	def testFineTuneModel(self, validationData, validationLabels, trainingTime, historyGenerated, fold, numLayersFreeze):
 		print('[INFO] testing fine tune model')
-		fullModel = self.addTopModel()
 		validationSamples = len(validationLabels)
 
 		validationLabels = utils.transformLabelsToCategorical(validationLabels, self.numClasses)
@@ -260,12 +215,10 @@ class Model(object):
 		testDatagen = ImageDataGenerator(rescale=1. / 255)
 		generator = testDatagen.flow(validationData, validationLabels, shuffle=False, batch_size = self.batchSize)
 
-		from keras import optimizers
-		fullModel.compile(optimizer=optimizers.RMSprop(lr=1e-6), loss='categorical_crossentropy', metrics=['accuracy'])
-		testLoss, testAccuracy = fullModel.evaluate_generator(generator, steps=validationSamples/self.batchSize)
+		testLoss, testAccuracy = self.model.topModel.evaluate_generator(generator, steps=validationSamples/self.batchSize)
 
 		self.logger.saveDataFineTuneModel(historyGenerated, (testLoss, testAccuracy), trainingTime, fold, numLayersFreeze, self.model.topType)
 
 		import gc
-		del fullModel
+		del self.model.topModel
 		gc.collect()

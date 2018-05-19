@@ -96,6 +96,16 @@ class VGG16(object):
 			layer = Dense(numClasses, activation='softmax', name='predictions')
 			self.topModel.add(layer)
 
+		elif self.topType == modelType.typeC:
+			layer = Flatten(name='flatten', input_shape=self.baseModel.output_shape[1:])
+			self.topModel.add(layer)
+			layer = Dense(100, activation='relu', name='fc1')
+			self.topModel.add(layer)
+			layer = Dropout(0.5, name='dropout')
+			self.topModel.add(layer)
+			layer = Dense(numClasses, activation='softmax', name='predictions')
+			self.topModel.add(layer)
+
 
 if __name__ == '__main__':
  

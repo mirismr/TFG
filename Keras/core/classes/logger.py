@@ -31,23 +31,26 @@ class Logger(object):
 
         if not os.path.exists(self.path+"topModel/bottlenecks/"):
             os.makedirs(self.path+"topModel/bottlenecks/")
-        if not os.path.exists(self.path+"topModel/dataHistory/"):
-            os.makedirs(self.path+"topModel/dataHistory/")
+        if not os.path.exists(self.path+"topModel/dataHistory/typeA/"):
+            os.makedirs(self.path+"topModel/dataHistory/typeA/")
+        if not os.path.exists(self.path+"topModel/dataHistory/typeB/"):
+            os.makedirs(self.path+"topModel/dataHistory/typeB/")
+        if not os.path.exists(self.path+"topModel/dataHistory/typeC/"):
+            os.makedirs(self.path+"topModel/dataHistory/typeC/")
+
         if not os.path.exists(self.path+"topModel/weights/"):
             os.makedirs(self.path+"topModel/weights/")
         if not os.path.exists(self.path+"topModel/generalData/"):
             os.makedirs(self.path+"topModel/generalData/")
-        if not os.path.exists(self.path+"topModel/plots/"):
-            os.makedirs(self.path+"topModel/plots/")
-
-        if not os.path.exists(self.path+"fineTune/dataHistory/"):
-            os.makedirs(self.path+"fineTune/dataHistory/")
+            
+        if not os.path.exists(self.path+"fineTune/dataHistory/15/"):
+            os.makedirs(self.path+"fineTune/dataHistory/15/")
+        if not os.path.exists(self.path+"fineTune/dataHistory/12/"):
+            os.makedirs(self.path+"fineTune/dataHistory/12/")
         if not os.path.exists(self.path+"fineTune/weights/"):
             os.makedirs(self.path+"fineTune/weights/")
         if not os.path.exists(self.path+"fineTune/generalData/"):
             os.makedirs(self.path+"fineTune/generalData/")
-        if not os.path.exists(self.path+"fineTune/plots/"):
-            os.makedirs(self.path+"fineTune/plots/")
 
     def saveClassDictionary(self, dictionary):	
         import json  
@@ -80,7 +83,7 @@ class Logger(object):
     def saveDataTopModel(self, historyGenerated, resultTest, trainingTime, fold, topType):
         import json  
         contentJson = json.dumps(historyGenerated.history, indent=4, sort_keys=True)
-        f = open(self.path+'topModel/dataHistory/top_model_history_fold_'+str(fold)+"_"+str(topType.value)+'.json', "w")
+        f = open(self.path+'topModel/dataHistory/'+str(topType.name)+'/top_model_history_fold_'+str(fold)+"_"+str(topType.value)+'.json', "w")
         f.write(contentJson)
         f.close()
 
@@ -92,7 +95,7 @@ class Logger(object):
     def saveDataFineTuneModel(self, historyGenerated, resultTest, trainingTime, fold, numLayersFreeze, topType):
         import json  
         contentJson = json.dumps(historyGenerated.history, indent=4, sort_keys=True)
-        f = open(self.path+'fineTune/dataHistory/top_model_history_fold_'+str(fold)+"_"+str(numLayersFreeze)+'.json', "w")
+        f = open(self.path+'fineTune/dataHistory/'+str(numLayersFreeze)+'/top_model_history_fold_'+str(fold)+"_"+str(numLayersFreeze)+'.json', "w")
         f.write(contentJson)
         f.close()
 
